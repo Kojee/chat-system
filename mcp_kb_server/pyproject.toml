@@ -1,0 +1,38 @@
+[project]
+name = "mcp-kb-server"
+version = "0.1.0"
+description = "Server MCP Knowledge Base"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "chromadb>=1.5.9",
+    "docx2md>=1.0.5",
+    "docx2txt>=0.9",
+    "fastapi>=0.136.1",
+    "langchain-text-splitters>=1.1.2",
+    "mcp[cli]>=1.27.1",
+    "openai>=2.36.0",
+    "pydantic-settings>=2.14.1",
+    "psycopg[binary]>=3.3.4",
+    "sqladmin>=0.27.2",
+    "sqlalchemy>=2.0.49",
+    "uvicorn[standard]>=0.46.0",
+]
+
+[project.scripts]
+mcp-kb-server = "mcp_kb_server.main:run"
+
+[build-system]
+requires = ["uv_build>=0.11.7,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "eval: tests that hit OpenAI for question generation + embedding (opt-in via --eval)",
+]
