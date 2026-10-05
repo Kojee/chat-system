@@ -2,9 +2,10 @@
 from contextlib import contextmanager
 
 import pytest
+from mcp.server.fastmcp.exceptions import ToolError
 
 from mcp_user_server.context import current_user_id
-from mcp_user_server.mcp_app import get_user_info
+from mcp_user_server.mcp_app import get_user_info, mcp
 
 from .factories import UserFactory
 
@@ -48,3 +49,18 @@ def test_unknown_user_id_raises():
     with _as_user(999):
         with pytest.raises(ValueError, match="not found"):
             get_user_info()
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("injected", [{"user_id": 2}, {"id": 2}, {"user_id": "2", "nome": "Bob"}])
+async def test_injected_arguments_cannot_change_target_user(injected):
+    """A model-generated tool call can carry arbitrary arguments; none of them may select another user."""
+    caller = UserFactory(id=1, nome="Alice", cognome="Smith")
+    UserFactory(id=2, nome="Bob", cognome="Jones")
+    with _as_user(caller.id):
+        try:
+            _content, structured = await mcp.call_tool("get_user_info", injected)
+        except ToolError:
+            return  # rejecting the call outright is also safe
+    assert structured["id"] == caller.id
+    assert structured["nome"] == "Alice"

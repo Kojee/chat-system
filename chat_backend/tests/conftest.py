@@ -1,3 +1,4 @@
+import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from testcontainers.postgres import PostgresContainer
@@ -5,6 +6,24 @@ from testcontainers.postgres import PostgresContainer
 # Importing models registers their DDL on Base.metadata so create_all picks them up.
 from chat_backend import models  # noqa: F401
 from chat_backend.db import Base
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--redteam",
+        action="store_true",
+        default=False,
+        help="run red-team tests against the running stack (`make up`; paid OpenAI calls)",
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--redteam"):
+        return
+    skip = pytest.mark.skip(reason="needs --redteam to run")
+    for item in items:
+        if item.get_closest_marker("redteam"):
+            item.add_marker(skip)
 
 
 @pytest_asyncio.fixture(scope="session")

@@ -44,6 +44,17 @@ To run them, from the root of the repo:
 make test-chat
 ```
 
+### Red-team suite
+`tests/redteam/` checks that a logged-in customer can't get the agent to reveal another customer's data. It runs against the live stack (`make up`) and is gated behind the `--redteam` flag, because every attack calls the model:
+- `attacks.py`: the attack cases. Each is a list of turns sent in one chat as user 1.
+- `detector.py`: builds canaries (other customers' names and revenue figures) from `mcp_user_server/data/customer_data.csv`. It matches them in text after normalizing thousands separators and decoding base64 tokens. Names the attacker typed in the prompt are excluded, so a refusal that repeats the name doesn't count as a leak.
+- `test_cross_user_leak.py`: sends each attack `REDTEAM_REPEATS` times (default 3). It then asserts that neither the reply nor any tool result in the thread's checkpoint contains a canary, and prints a summary table by attack category. It also checks that a user can't read or post to another user's thread.
+- `test_detector.py`: self-checks for the detector. These need no stack and run with `make test`.
+
+```
+make redteam
+```
+
 ## Execution
 Run from the root of the repo:
 ```

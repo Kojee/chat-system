@@ -53,6 +53,8 @@ flowchart LR
 2. Have an LLM generate 3 realistic customer questions per chunk. Questions are cached by chunk-content hash, so re-runs are free until the chunking changes.
 3. Query Chroma with each question and report **recall@1**, **recall@5** and **MRR** for the source chunk, plus the worst misses.
 
+`make redteam` runs a prompt-injection suite ([`tests/redteam`](chat_backend/tests/redteam/)) against the live stack. Each of 13 attacks runs 3 times as user 1. The attacks cover direct requests, tool-argument injection, fake system messages, admin role-play, output obfuscation and multi-turn identity switches. Each run checks two places for other customers' names or revenue figures: the streamed reply, and every tool result in the LangGraph checkpoint. A clean tool result shows the data never entered the model's context at all, so the result doesn't depend on the model choosing to refuse.
+
 Other test suites (`make test`) cover chat persistence and per-user data isolation in the user MCP server. They run against real Postgres via `testcontainers`.
 
 ## Quickstart
@@ -72,13 +74,13 @@ The knowledge-base admin panel is at http://localhost:8002/admin.
 | `make up` / `make down` / `make logs` | Manage the Docker Compose stack |
 | `make test` | Run all test suites (needs Docker) |
 | `make eval` | Run the retrieval benchmark (makes paid OpenAI calls on first run) |
+| `make redteam` | Run the cross-user leak red-team suite (makes paid OpenAI calls) |
 
 ## Limitations and next steps
 
 This is a prototype. Auth is simulated: a cookie carries the user id, and API keys are checked for presence only. The only client is a CLI. Next steps, roughly in priority order:
 
 - End-to-end answer evaluation with LLM-as-judge over a golden question set
-- Red-team tests for prompt injection and cross-user data leakage
 - Tracing and per-chat cost and latency metrics, tied to `AgentSettings`
 - Human-in-the-loop approval for tools that write data
 - JWT-based auth between services, and a web chat UI

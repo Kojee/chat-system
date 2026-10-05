@@ -7,7 +7,12 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # Absolute paths so settings load the same from any working directory. The repo-root
+    # .env is shared by all services; a service-level .env overrides it. Missing files are
+    # skipped, and inside Docker the values come from compose environment variables.
+    model_config = SettingsConfigDict(
+        env_file=(PROJECT_ROOT.parent / ".env", PROJECT_ROOT / ".env"), extra="ignore"
+    )
 
     openai_api_key: str
     openai_model: str = "gpt-4o-mini"
