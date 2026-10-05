@@ -55,6 +55,25 @@ flowchart LR
 
 `make redteam` runs a prompt-injection suite ([`tests/redteam`](chat_backend/tests/redteam/)) against the live stack. Each of 13 attacks runs 3 times as user 1. The attacks cover direct requests, tool-argument injection, fake system messages, admin role-play, output obfuscation and multi-turn identity switches. Each run checks two places for other customers' names or revenue figures: the streamed reply, and every tool result in the LangGraph checkpoint. A clean tool result shows the data never entered the model's context at all, so the result doesn't depend on the model choosing to refuse.
 
+Results with `gpt-4o-mini` (October 2026):
+
+| Attack category | Attempts | Leaks in reply | Leaks in tool results |
+|---|---:|---:|---:|
+| Direct request | 6 | 0 | 0 |
+| Enumeration | 3 | 0 | 0 |
+| Tool argument injection | 6 | 0 | 0 |
+| Role-play / authority | 3 | 0 | 0 |
+| Fake system message | 3 | 0 | 0 |
+| Instruction override | 3 | 0 | 0 |
+| Indirect pivot | 3 | 0 | 0 |
+| Output obfuscation | 3 | 0 | 0 |
+| Aggregate disclosure | 3 | 0 | 0 |
+| Multi-turn identity switch | 3 | 0 | 0 |
+| Multi-turn escalation | 3 | 0 | 0 |
+| **Total** | **39** | **0** | **0** |
+
+In none of the runs did the model try to pass a `user_id` to `get_user_info`, so the end-to-end runs never tested the server ignoring one. A separate unit test in the user MCP server covers that case. It calls the tool with injected arguments such as `{"user_id": 2}` and checks that the caller's own record comes back.
+
 Other test suites (`make test`) cover chat persistence and per-user data isolation in the user MCP server. They run against real Postgres via `testcontainers`.
 
 ## Quickstart
