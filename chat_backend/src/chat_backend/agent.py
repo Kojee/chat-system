@@ -8,14 +8,15 @@ from .mcp_servers import build_mcp_client
 
 
 async def build_agent(user_id: int, checkpointer, params: AgentParams):
-    model = ChatOpenAI(model=params.model_name, api_key=settings.openai_api_key)
+    api_key = settings.openai_api_key.get_secret_value()
+    model = ChatOpenAI(model=params.model_name, api_key=api_key)
 
     middleware = []
     if params.has_summarizer:
         summarizer_model = (
             model
             if params.summarizer_model_name == params.model_name
-            else ChatOpenAI(model=params.summarizer_model_name, api_key=settings.openai_api_key)
+            else ChatOpenAI(model=params.summarizer_model_name, api_key=api_key)
         )
         middleware.append(
             SummarizationMiddleware(

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,7 +15,7 @@ class Settings(BaseSettings):
         env_file=(PROJECT_ROOT.parent / ".env", PROJECT_ROOT / ".env"), extra="ignore"
     )
 
-    openai_api_key: str
+    openai_api_key: SecretStr = Field(min_length=1)  # rejects an empty OPENAI_API_KEY= too
     openai_model: str = "gpt-4o-mini"
 
     mcp_api_key: str = "dev-key"

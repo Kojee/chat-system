@@ -1,11 +1,18 @@
-import pytest
-import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from testcontainers.postgres import PostgresContainer
+import os
+
+# Settings require OPENAI_API_KEY at import. No test here calls the model (the redteam
+# suite talks to the backend running in Docker, which has its own key), so a placeholder
+# keeps the suite runnable without a real key. Must be set before chat_backend is imported.
+os.environ.setdefault("OPENAI_API_KEY", "test-key-not-used")
+
+import pytest  # noqa: E402
+import pytest_asyncio  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine  # noqa: E402
+from testcontainers.postgres import PostgresContainer  # noqa: E402
 
 # Importing models registers their DDL on Base.metadata so create_all picks them up.
-from chat_backend import models  # noqa: F401
-from chat_backend.db import Base
+from chat_backend import models  # noqa: F401, E402
+from chat_backend.db import Base  # noqa: E402
 
 
 def pytest_addoption(parser):
